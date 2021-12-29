@@ -2,17 +2,17 @@
  * @file rpc.cc
  * @brief Simple Rpc-related methods.
  */
+#include "rpc.h"
+
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
-
-#include "rpc.h"
 
 namespace erpc {
 
 template <class TTr>
 Rpc<TTr>::Rpc(Nexus *nexus, void *context, uint8_t rpc_id,
-              sm_handler_t sm_handler, uint8_t phy_port)
+              sm_handler_t sm_handler, std::string dev_name, uint8_t phy_port)
     : nexus_(nexus),
       context_(context),
       rpc_id_(rpc_id),
@@ -51,8 +51,8 @@ Rpc<TTr>::Rpc(Nexus *nexus, void *context, uint8_t rpc_id,
   // Partially initialize the transport without using hugepages. This
   // initializes the transport's memory registration functions required for
   // the hugepage allocator.
-  transport_ =
-      new TTr(nexus->sm_udp_port_, rpc_id, phy_port, numa_node_, trace_file_);
+  transport_ = new TTr(nexus->sm_udp_port_, rpc_id, dev_name, phy_port,
+                       numa_node_, trace_file_);
 
   huge_alloc_ =
       new HugeAlloc(kInitialHugeAllocSize, numa_node_, transport_->reg_mr_func_,
@@ -96,6 +96,12 @@ Rpc<TTr>::Rpc(Nexus *nexus, void *context, uint8_t rpc_id,
   pkt_loss_scan_tsc_ = rdtsc();  // Assign epoch timestamp as late as possible
   if (kCcPacing) wheel_->catchup();  // Wheel could be lagging, so catch up
 }
+
+
+template <class TTr>
+Rpc<TTr>::Rpc(Nexus *nexus, void *context, uint8_t rpc_id,
+              sm_handler_t sm_handler, uint8_t phy_port)
+    : Rpc<TTr>(nexus, context, rpc_id, sm_handler, "", phy_port) {}
 
 template <class TTr>
 Rpc<TTr>::~Rpc() {

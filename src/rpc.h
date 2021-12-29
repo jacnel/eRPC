@@ -2,6 +2,7 @@
 
 #include <map>
 #include <set>
+
 #include "cc/timing_wheel.h"
 #include "common.h"
 #include "msg_buffer.h"
@@ -101,15 +102,18 @@ class Rpc {
    * \param sm_handler The session management callback that is invoked when
    * sessions are successfully created or destroyed.
    *
-   * @param phy_port An Rpc object uses one port on a "datapath" NIC, which
-   * refers to a NIC that supports DPDK or ibverbs. phy_port is the zero-based
-   * index of that port among active ports, same as the one passed to
-   * `rte_eth_dev_info_get` for the DPDK transport; or as listed by
-   * `ibv_devinfo` for Raw, InfiniBand, and RoCE transports. Multiple Rpc
-   * objects may use the same phy_port.
+   * @param dev_name The name of the NIC to use as indicated by `ibv_devinfo`
+   * for Raw, InfiniBand and RoCE transports. Not implemented for DPDK.
+   *
+   * @param phy_port An Rpc object uses one physical port on the NIC. phy_port
+   * is the zero-based index of that port among active ports, as listed by
+   * `ibv_devinfo` for Raw, InfiniBand, and RoCE transports; or by
+   * `dpdk-devbind` for DPDK transport.
    *
    * @throw runtime_error if construction fails
    */
+  Rpc(Nexus *nexus, void *context, uint8_t rpc_id, sm_handler_t sm_handler,
+      std::string dev_name, uint8_t phy_port = 0);
   Rpc(Nexus *nexus, void *context, uint8_t rpc_id, sm_handler_t sm_handler,
       uint8_t phy_port = 0);
 

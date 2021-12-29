@@ -20,10 +20,11 @@ static constexpr size_t kDefaultGIDIndex = 1;
 // Initialize the protection domain, queue pair, and memory registration and
 // deregistration functions. RECVs will be initialized later when the hugepage
 // allocator is provided.
-IBTransport::IBTransport(uint16_t sm_udp_port, uint8_t rpc_id, uint8_t phy_port,
+IBTransport::IBTransport(uint16_t sm_udp_port, uint8_t rpc_id,
+                         std::string dev_name, uint8_t phy_port,
                          size_t numa_node, FILE *trace_file)
-    : Transport(TransportType::kInfiniBand, rpc_id, phy_port, numa_node,
-                trace_file) {
+    : Transport(TransportType::kInfiniBand, rpc_id, dev_name, phy_port,
+                numa_node, trace_file) {
   _unused(sm_udp_port);
   if (!kIsRoCE) {
     rt_assert(kHeadroom == 0, "Invalid packet header headroom for InfiniBand");
@@ -31,7 +32,7 @@ IBTransport::IBTransport(uint16_t sm_udp_port, uint8_t rpc_id, uint8_t phy_port,
     rt_assert(kHeadroom == 40, "Invalid packet header headroom for RoCE");
   }
 
-  common_resolve_phy_port(phy_port, kMTU, kTransportType, resolve);
+  common_resolve_phy_port(dev_name, phy_port, kMTU, kTransportType, resolve);
   ib_resolve_phy_port();
 
   init_verbs_structs();

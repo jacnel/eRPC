@@ -87,8 +87,8 @@ class Transport {
    *
    * @throw runtime_error if creation fails
    */
-  Transport(TransportType, uint8_t rpc_id, uint8_t phy_port, size_t numa_node,
-            FILE* trace_file);
+  Transport(TransportType, uint8_t rpc_id, std::string dev_name,
+            uint8_t phy_port, size_t numa_node, FILE* trace_file);
 
   /**
    * @brief Initialize transport structures that require hugepages, and
@@ -158,9 +158,10 @@ class Transport {
 
   // Members that are needed by all transports. Constructor args first.
   const TransportType transport_type_;
-  const uint8_t rpc_id_;    ///< The parent Rpc's ID
-  const uint8_t phy_port_;  ///< 0-based index among active fabric ports
-  const size_t numa_node_;  ///< The NUMA node of the parent Nexus
+  const uint8_t rpc_id_;        ///< The parent Rpc's ID
+  const std::string dev_name_;  ///< Device name
+  const uint8_t phy_port_;      ///< 0-based index among active fabric ports
+  const size_t numa_node_;      ///< The NUMA node of the parent Nexus
 
   // Other members
   reg_mr_func_t reg_mr_func_;      ///< The memory registration function

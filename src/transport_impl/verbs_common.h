@@ -126,8 +126,8 @@ static std::string ibdev2netdev(std::string ibdev_name) {
   return net_ifaces[0];
 }
 
-static void common_resolve_phy_port(uint8_t phy_port, size_t mtu,
-                                    TransportType transport_type,
+static void common_resolve_phy_port(std::string dev_name, uint8_t phy_port,
+                                    size_t mtu, TransportType transport_type,
                                     VerbsResolve &resolve) {
   std::ostringstream xmsg;  // The exception message
   int num_devices = 0;
@@ -146,6 +146,14 @@ static void common_resolve_phy_port(uint8_t phy_port, size_t mtu,
     if (ibv_query_device(ib_ctx, &device_attr) != 0) {
       xmsg << "Failed to query device " << std::to_string(dev_i);
       throw std::runtime_error(xmsg.str());
+    }
+
+    if (!dev_name.empty() && dev_name != ib_ctx->device->name) {
+      if (ibv_close_device(ib_ctx) != 0) {
+        xmsg << "Failed to close device " << ib_ctx->device->name;
+        throw std::runtime_error(xmsg.str());
+      }
+      continue;
     }
 
     for (uint8_t port_i = 1; port_i <= device_attr.phys_port_cnt; port_i++) {
